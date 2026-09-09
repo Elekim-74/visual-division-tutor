@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A child-friendly visual tutor that teaches division using equal groups and chunking."
+    />
+    <meta name="theme-color" content="#2d63d7" />
+    <meta name="background-color" content="#f5f8ff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <title>Visual Division Tutor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="intro" aria-labelledby="app-title">
+        <p class="eyebrow">Division helper</p>
+        <h1 id="app-title">Visual Division Tutor</h1>
+        <p class="intro-copy">Let’s make equal groups, one step at a time.</p>
+      </section>
+
+      <form id="division-form" class="input-card">
+        <div class="input-grid">
+          <label for="dividend">
+            <span>Number to share <span class="technical-term">(dividend)</span></span>
+            <small>Dividend means the number we are splitting.</small>
+            <input id="dividend" name="dividend" type="text" inputmode="numeric" autocomplete="off" />
+          </label>
+
+          <label for="divisor">
+            <span>Number in each group <span class="technical-term">(divisor)</span></span>
+            <small>Divisor means how many go in each group.</small>
+            <input id="divisor" name="divisor" type="text" inputmode="numeric" autocomplete="off" />
+          </label>
+        </div>
+        <div class="button-row">
+          <button type="submit">Let’s make the groups</button>
+          <button id="reset-button" class="secondary-button" type="button">Start again</button>
+        </div>
+        <p id="error-message" class="message error" hidden></p>
+      </form>
+
+      <p id="validation-message" class="message error" hidden></p>
+      <section id="results" class="results" aria-live="polite" hidden></section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+    <script src="./pwa.js" defer></script>
+  </body>
+</html>

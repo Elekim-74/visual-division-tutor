@@ -59,4 +59,3 @@ Then open <http://localhost:8000>.
 ## What I learned
 
 This project reinforced the value of separating a deterministic maths engine from the visual teaching layer, validating both the calculation and what is actually drawn on screen, and preparing relative PWA paths for deployment below a GitHub Pages project URL.
-
