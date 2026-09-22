@@ -2,6 +2,20 @@
 
 Visual Division Tutor is a free, child-friendly Progressive Web App (PWA) that makes division visible. It shows chunking and equal groups step by step, helping children connect division symbols with the quantities they represent.
 
+## Canonical source and status
+
+The canonical code source is the [`Elekim-74/visual-division-tutor`](https://github.com/Elekim-74/visual-division-tutor) repository on GitHub `main`. The live GitHub Pages site is available at <https://elekim-74.github.io/visual-division-tutor/>.
+
+V1 has passed human visual and responsive acceptance on desktop, phone and tablet layouts. The current interface, deterministic maths engine, PWA behaviour and GitHub Pages configuration are accepted.
+
+Historical Windows copies may exist for reference, but they are not canonical and must not be used as release sources. Use GitHub `main` for code and release decisions.
+
+## Project documentation
+
+- [Architecture](docs/ARCHITECTURE.md) describes the browser-only tutor, PWA assets and source boundaries.
+- [Operations](docs/OPERATIONS.md) covers local running, testing, release verification and maintenance.
+- [Decisions](docs/DECISIONS.md) records the canonical-source, release and historical-copy decisions.
+
 ## The problem
 
 Division can feel abstract when a child sees only numbers and symbols. This project provides a visual aid for the moment when a learner needs to see what the maths is doing before returning to their school question.
