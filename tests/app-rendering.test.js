@@ -143,6 +143,32 @@ test("20-group teaching cue is shown without replacing the groups", () => {
   assert.equal(cue.textContent, "10 groups + another 10 groups = 20 groups");
 });
 
+test("partial quotients are combined before the final answer", () => {
+  renderAndInspect(85, 3);
+
+  const finalCard = results.children.at(-1);
+  const summary = finalCard.children.find((child) => child.className === "quotient-summary");
+  const explanation = finalCard.children.find((child) => child.className === "quotient-explanation");
+
+  assert.equal(summary.textContent, "Putting it together: 20 + 5 + 2 + 1 = 28 groups.");
+  assert.equal(explanation.textContent, "We made 28 equal groups of 3, with 1 left over.");
+});
+
+test("a zero quotient explains why every counter is left over", () => {
+  renderAndInspect(3, 5);
+
+  const remainderCard = results.children.at(-2);
+  const remainderLabel = remainderCard.children.find((child) => child.className === "remainder-label");
+  const finalCard = results.children.at(-1);
+  const explanation = finalCard.children.find((child) => child.className === "quotient-explanation");
+
+  assert.equal(
+    remainderLabel.textContent,
+    "3 is too small to make even one group of 5, so all 3 are left over.",
+  );
+  assert.equal(explanation.textContent, "We made 0 equal groups of 5, with 3 left over.");
+});
+
 test("responsive viewport changes do not change group or counter counts", () => {
   for (const width of [320, 768, 1440]) {
     document.documentElement = { clientWidth: width };

@@ -1,4 +1,4 @@
-const CACHE_NAME = "visual-division-tutor-v4";
+const CACHE_NAME = "visual-division-tutor-v5";
 const CACHE_PREFIX = "visual-division-tutor-";
 const APP_SHELL = [
   "./",

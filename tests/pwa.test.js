@@ -34,7 +34,13 @@ test("index.html includes PWA metadata and registration", () => {
   assert.match(indexHTML, /src="\.\/pwa\.js"/);
 });
 
+test("error messages are announced to screen readers", () => {
+  assert.match(indexHTML, /id="error-message"[^>]*role="alert"[^>]*aria-atomic="true"/);
+  assert.match(indexHTML, /id="validation-message"[^>]*role="alert"[^>]*aria-atomic="true"/);
+});
+
 test("service worker precaches only local app resources", () => {
+  assert.match(serviceWorkerSource, /visual-division-tutor-v5/);
   const shellMatches = serviceWorkerSource.match(/"\.\/[^\"]+"/g) ?? [];
   assert.ok(shellMatches.includes('"./index.html"'));
   assert.ok(shellMatches.includes('"./styles.css"'));

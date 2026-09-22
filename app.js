@@ -137,7 +137,12 @@ function renderRemainder(calculation) {
 
   const label = document.createElement("p");
   label.className = "remainder-label";
-  if (calculation.remainder === 0) {
+  if (calculation.quotient === 0) {
+    const leftoverPhrase = calculation.dividend === 1
+      ? "the 1 is"
+      : `all ${calculation.dividend} are`;
+    label.textContent = `${calculation.dividend} is too small to make even one group of ${calculation.divisor}, so ${leftoverPhrase} left over.`;
+  } else if (calculation.remainder === 0) {
     label.textContent = "Nothing is left over, so the remainder is 0.";
   } else {
     const remainderVerb = calculation.remainder === 1 ? "is" : "are";
@@ -155,15 +160,27 @@ function renderFinalAnswer(calculation) {
   const heading = document.createElement("h2");
   heading.textContent = "Our answer";
 
+  if (calculation.chunks.length > 0) {
+    const summary = document.createElement("p");
+    summary.className = "quotient-summary";
+    const partialQuotients = calculation.chunks.map((chunk) => chunk.groups).join(" + ");
+    const groupWord = calculation.quotient === 1 ? "group" : "groups";
+    summary.textContent = `Putting it together: ${partialQuotients} = ${calculation.quotient} ${groupWord}.`;
+    card.append(heading, summary);
+  } else {
+    card.append(heading);
+  }
+
   const answer = document.createElement("p");
   answer.className = "final-answer";
   answer.textContent = `${calculation.dividend} ÷ ${calculation.divisor} = ${calculation.quotient} remainder ${calculation.remainder}`;
 
-  const check = document.createElement("p");
-  check.className = "check-question";
-  check.textContent = `How many groups of ${calculation.divisor} did we make altogether?`;
+  const explanation = document.createElement("p");
+  explanation.className = "quotient-explanation";
+  const groupWord = calculation.quotient === 1 ? "group" : "groups";
+  explanation.textContent = `We made ${calculation.quotient} equal ${groupWord} of ${calculation.divisor}, with ${calculation.remainder} left over.`;
 
-  card.append(heading, answer, check);
+  card.append(answer, explanation);
   return card;
 }
 
