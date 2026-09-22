@@ -40,7 +40,7 @@ test("error messages are announced to screen readers", () => {
 });
 
 test("service worker precaches only local app resources", () => {
-  assert.match(serviceWorkerSource, /visual-division-tutor-v5/);
+  assert.match(serviceWorkerSource, /visual-division-tutor-v6/);
   const shellMatches = serviceWorkerSource.match(/"\.\/[^\"]+"/g) ?? [];
   assert.ok(shellMatches.includes('"./index.html"'));
   assert.ok(shellMatches.includes('"./styles.css"'));

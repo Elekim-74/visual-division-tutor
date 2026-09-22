@@ -52,7 +52,9 @@ export function createGroup(groupSize) {
 function createRemainderCounters(remainder) {
   const counterTray = document.createElement("div");
   counterTray.className = "remainder-counters";
-  counterTray.setAttribute("aria-label", `${remainder} counters are left over`);
+  const counterNoun = remainder === 1 ? "counter" : "counters";
+  const remainderVerb = remainder === 1 ? "is" : "are";
+  counterTray.setAttribute("aria-label", `${remainder} ${counterNoun} ${remainderVerb} left over`);
 
   for (let i = 0; i < remainder; i += 1) {
     const counter = document.createElement("span");
@@ -117,8 +119,13 @@ function renderChunk(chunk, index, calculation) {
 
   const left = document.createElement("p");
   left.className = "left-amount";
-  const leftVerb = chunk.after === 1 ? "is" : "are";
-  left.textContent = `Now ${chunk.after} ${leftVerb} left.`;
+  if (chunk.after === 0) {
+    left.textContent = "Now 0 are left.";
+  } else {
+    const counterNoun = chunk.after === 1 ? "counter" : "counters";
+    const leftVerb = chunk.after === 1 ? "is" : "are";
+    left.textContent = `Now ${chunk.after} ${counterNoun} ${leftVerb} left.`;
+  }
 
   card.append(heading, teachingSentence, visualRow, equation, left);
   return card;
@@ -145,8 +152,9 @@ function renderRemainder(calculation) {
   } else if (calculation.remainder === 0) {
     label.textContent = "Nothing is left over, so the remainder is 0.";
   } else {
+    const counterNoun = calculation.remainder === 1 ? "counter" : "counters";
     const remainderVerb = calculation.remainder === 1 ? "is" : "are";
-    label.textContent = `${calculation.remainder} ${remainderVerb} left over, so the remainder is ${calculation.remainder}.`;
+    label.textContent = `${calculation.remainder} ${counterNoun} ${remainderVerb} left over, so the remainder is ${calculation.remainder}.`;
   }
 
   card.append(heading, visualRow, label);

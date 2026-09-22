@@ -154,6 +154,34 @@ test("partial quotients are combined before the final answer", () => {
   assert.equal(explanation.textContent, "We made 28 equal groups of 3, with 1 left over.");
 });
 
+test("a remainder of 1 uses singular visible and accessible wording", () => {
+  renderAndInspect(85, 3);
+
+  const finalStep = results.children.at(-3);
+  const leftAmount = finalStep.children.find((child) => child.className === "left-amount");
+  const remainderCard = results.children.at(-2);
+  const visualRow = remainderCard.children.find((child) => child.className.includes("remainder-row"));
+  const remainderLabel = remainderCard.children.find((child) => child.className === "remainder-label");
+
+  assert.equal(leftAmount.textContent, "Now 1 counter is left.");
+  assert.equal(remainderLabel.textContent, "1 counter is left over, so the remainder is 1.");
+  assert.equal(visualRow.children[0].attributes["aria-label"], "1 counter is left over");
+});
+
+test("a remainder greater than 1 uses plural visible and accessible wording", () => {
+  renderAndInspect(47, 4);
+
+  const finalStep = results.children.at(-3);
+  const leftAmount = finalStep.children.find((child) => child.className === "left-amount");
+  const remainderCard = results.children.at(-2);
+  const visualRow = remainderCard.children.find((child) => child.className.includes("remainder-row"));
+  const remainderLabel = remainderCard.children.find((child) => child.className === "remainder-label");
+
+  assert.equal(leftAmount.textContent, "Now 3 counters are left.");
+  assert.equal(remainderLabel.textContent, "3 counters are left over, so the remainder is 3.");
+  assert.equal(visualRow.children[0].attributes["aria-label"], "3 counters are left over");
+});
+
 test("a zero quotient explains why every counter is left over", () => {
   renderAndInspect(3, 5);
 
