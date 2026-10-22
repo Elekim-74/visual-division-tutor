@@ -15,10 +15,15 @@ Historical Windows copies exist, including an earlier local Git worktree, a date
 | Static client-side PWA | Accepted. No framework, backend, database or learner account system is required. |
 | GitHub Pages project-site deployment | Accepted and live. Keep the existing relative-path PWA configuration. |
 | Browser-review artefacts | Not source. `.playwright-cli/` is ignored to prevent accidental commits. |
+| Guided "work it out together" mode | Accepted by the project owner on 22/10/2026 after local testing; live since PR #1. It is the main button; the full worked view stays as **Just show me the working**. |
+| Wrong answers in guided mode | Accepted 22/10/2026: hints only, never the answer; each hint more specific than the last. |
+| Show-me lock | Accepted 22/10/2026: **Just show me the working** stays greyed out until 3 wrong tries at one question, or 3 too-big guesses in a row (a sign of no understanding yet). It relocks for each new problem and on **Start again**. |
+| Offline guided mode | Accepted 22/10/2026: guided files are in the app shell; cache name moved from v6 to v7. |
 
 ## Known limitations
 
 - The tutor supports whole-number division only.
+- Guided mode has been tested by the project owner; review of a learner's first real use is still to come.
 - Offline use begins only after a successful online app-shell cache.
 - The project has no learner progress tracking, authentication or multi-user features.
 - The README screenshot remains a placeholder; adding a portfolio image requires a separate asset decision.
