@@ -40,12 +40,14 @@ test("error messages are announced to screen readers", () => {
 });
 
 test("service worker precaches only local app resources", () => {
-  assert.match(serviceWorkerSource, /visual-division-tutor-v6/);
+  assert.match(serviceWorkerSource, /visual-division-tutor-v7/);
   const shellMatches = serviceWorkerSource.match(/"\.\/[^\"]+"/g) ?? [];
   assert.ok(shellMatches.includes('"./index.html"'));
   assert.ok(shellMatches.includes('"./styles.css"'));
   assert.ok(shellMatches.includes('"./app.js"'));
   assert.ok(shellMatches.includes('"./division.js"'));
+  assert.ok(shellMatches.includes('"./guided.js"'));
+  assert.ok(shellMatches.includes('"./guided-ui.js"'));
   assert.ok(shellMatches.includes('"./pwa.js"'));
   assert.ok(shellMatches.includes('"./manifest.webmanifest"'));
   assert.ok(!serviceWorkerSource.includes("https://"));

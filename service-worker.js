@@ -1,4 +1,4 @@
-const CACHE_NAME = "visual-division-tutor-v6";
+const CACHE_NAME = "visual-division-tutor-v7";
 const CACHE_PREFIX = "visual-division-tutor-";
 const APP_SHELL = [
   "./",
@@ -6,6 +6,8 @@ const APP_SHELL = [
   "./styles.css",
   "./app.js",
   "./division.js",
+  "./guided.js",
+  "./guided-ui.js",
   "./pwa.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",

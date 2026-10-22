@@ -40,18 +40,22 @@
             <input id="divisor" name="divisor" type="text" inputmode="numeric" autocomplete="off" />
           </label>
         </div>
-        <div class="button-row">
-          <button type="submit">Let’s make the groups</button>
+        <div class="button-row three">
+          <button id="guided-button" type="button">Let’s work it out together</button>
+          <button type="submit" class="secondary-button" aria-describedby="show-me-note" disabled>Just show me the working</button>
           <button id="reset-button" class="secondary-button" type="button">Start again</button>
         </div>
+        <p id="show-me-note" class="lock-note">“Just show me the working” switches on after 3 tries at one question.</p>
         <p id="error-message" class="message error" role="alert" aria-atomic="true" hidden></p>
       </form>
 
       <p id="validation-message" class="message error" role="alert" aria-atomic="true" hidden></p>
       <section id="results" class="results" aria-live="polite" hidden></section>
+      <section id="guided" class="guided-card" aria-labelledby="guided-heading" hidden></section>
     </main>
 
     <script type="module" src="./app.js"></script>
+    <script type="module" src="./guided-ui.js"></script>
     <script src="./pwa.js" defer></script>
   </body>
 </html>
