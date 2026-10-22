@@ -42,9 +42,10 @@
         </div>
         <div class="button-row three">
           <button id="guided-button" type="button">Let’s work it out together</button>
-          <button type="submit" class="secondary-button">Just show me the working</button>
+          <button type="submit" class="secondary-button" aria-describedby="show-me-note" disabled>Just show me the working</button>
           <button id="reset-button" class="secondary-button" type="button">Start again</button>
         </div>
+        <p id="show-me-note" class="lock-note">“Just show me the working” switches on after 3 tries at one question.</p>
         <p id="error-message" class="message error" role="alert" aria-atomic="true" hidden></p>
       </form>
 

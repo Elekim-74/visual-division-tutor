@@ -13,6 +13,8 @@ const errorMessage = document.querySelector("#error-message");
 const results = document.querySelector("#results");
 const validationMessage = document.querySelector("#validation-message");
 const panel = document.querySelector("#guided");
+const showMeButton = form?.querySelector('button[type="submit"]');
+const showMeNote = document.querySelector("#show-me-note");
 
 let session = null;
 
@@ -26,6 +28,14 @@ function el(tag, className, text) {
 function readWholeNumber(input) {
   const raw = input.value.trim();
   return /^\d+$/.test(raw) ? Number(raw) : null;
+}
+
+// "Just show me the working" stays greyed out until the learner has had
+// 3 wrong tries at one question in guided mode.
+function setShowMe(unlocked) {
+  if (!showMeButton) return;
+  showMeButton.disabled = !unlocked;
+  if (showMeNote) showMeNote.hidden = unlocked;
 }
 
 function hidePanel() {
@@ -107,6 +117,7 @@ function take(answer, chat, area) {
   session = respond(session, answer);
 
   if (session.feedback) bubble(chat, "tutor", session.feedback.text, session.feedback.tone);
+  setShowMe(session.showMeUnlocked);
   if (session.chunks.length > before) chat.appendChild(chunkVisual(session.chunks[session.chunks.length - 1]));
 
   const repeated = session.prompt.text === previousPrompt && session.feedback?.tone !== "correct";
@@ -124,6 +135,8 @@ function start() {
   validationMessage.hidden = true;
   results.replaceChildren();
   results.hidden = true;
+
+  setShowMe(false);
 
   try {
     session = createGuidedSession(readWholeNumber(dividendInput), readWholeNumber(divisorInput));
@@ -151,5 +164,17 @@ function start() {
 if (guidedButton && panel) {
   guidedButton.addEventListener("click", start);
   form.addEventListener("submit", hidePanel);
-  resetButton.addEventListener("click", hidePanel);
+  resetButton.addEventListener("click", () => {
+    hidePanel();
+    setShowMe(false);
+  });
+  for (const input of [dividendInput, divisorInput]) {
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        start();
+      }
+    });
+  }
+  setShowMe(false);
 }

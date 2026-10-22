@@ -64,16 +64,60 @@ test("second too-big guess adds a benchmark tip", () => {
   assert.match(state.feedback.text, /Tip: 5 groups of 10 is 50/);
 });
 
-test("wrong product gets a hint first, then the answer is shown", () => {
+test("wrong product keeps getting hints, never the answer, and they get more specific", () => {
   let state = createGuidedSession(98, 10);
   state = respond(state, "8");
   state = respond(state, "70");
   assert.equal(state.feedback.tone, "hint");
-  assert.match(state.feedback.text, /Count in 10s: 10, 20, 30/);
+  assert.match(state.feedback.text, /Count in 10s: 10, 20, 30…/);
   assert.equal(state.phase, "product");
+  assert.equal(state.showMeUnlocked, false);
   state = respond(state, "90");
-  assert.equal(state.feedback.tone, "reveal");
+  assert.match(state.feedback.text, /10, 20, 30, 40, 50, 60, 70… what comes next\?/);
+  assert.equal(state.phase, "product");
+  assert.equal(state.showMeUnlocked, false);
+  assert.doesNotMatch(state.feedback.text, /\b80\b/);
+  state = respond(state, "60");
+  assert.equal(state.phase, "product");
+  assert.equal(state.showMeUnlocked, true);
+  assert.match(state.feedback.text, /you can now press “Just show me the working”/);
+  state = respond(state, "80");
   assert.equal(state.phase, "leftover");
+  assert.equal(state.showMeUnlocked, true, "stays unlocked for the rest of this problem");
+});
+
+test("3 wrong tries at how many are left unlocks show-me; 2 do not", () => {
+  let state = createGuidedSession(98, 10);
+  state = respond(state, "8");
+  state = respond(state, "80");
+  state = respond(state, "8");
+  state = respond(state, "28");
+  assert.equal(state.showMeUnlocked, false);
+  assert.match(state.feedback.text, /Count up from 80: first jump to 90, that's 10/);
+  state = respond(state, "17");
+  assert.equal(state.showMeUnlocked, true);
+  assert.equal(state.phase, "leftover");
+});
+
+test("wrong tries on different questions do not add up", () => {
+  let state = createGuidedSession(98, 10);
+  state = respond(state, "8");
+  state = respond(state, "70");
+  state = respond(state, "90");
+  state = respond(state, "80");
+  state = respond(state, "8");
+  state = respond(state, "28");
+  assert.equal(state.showMeUnlocked, false);
+});
+
+test("3 too-big guesses in a row unlock show-me", () => {
+  let state = createGuidedSession(98, 10);
+  for (const guess of ["12", "11", "10"]) {
+    state = respond(state, guess);
+    state = respond(state, String(Number(guess) * 10));
+  }
+  assert.equal(state.phase, "guess");
+  assert.equal(state.showMeUnlocked, true);
 });
 
 test("saying 'no more' when more groups fit gets a nudge", () => {

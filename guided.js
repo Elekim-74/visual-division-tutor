@@ -4,7 +4,11 @@
 
 import { validateInputs } from "./division.js";
 
-const MAX_TRIES = 2; // wrong answers before the tutor shows the answer
+// Wrong answers never reveal the answer: each one gets a hint, and the
+// hints get more specific. After UNLOCK_AFTER wrong tries on one question
+// (or that many too-big guesses in a row), the "show me the working"
+// button is unlocked for the rest of this problem.
+const UNLOCK_AFTER = 3;
 const BENCHMARKS = [100, 50, 20, 10, 5, 2, 1];
 
 function plural(n, one, many) {
@@ -33,7 +37,20 @@ function benchmarkHint(remaining, divisor) {
   return `Tip: ${groupsOf(k, divisor)} is ${k * divisor}, and that fits inside ${remaining}.`;
 }
 
-function productHint(groups, divisor) {
+function productHint(groups, divisor, tries) {
+  if (tries >= 2) {
+    if (groups <= 12) {
+      const steps = Array.from({ length: groups - 1 }, (_, i) => (i + 1) * divisor);
+      return steps.length === 0
+        ? `1 group of ${divisor} is just ${divisor} counters.`
+        : `Count in ${divisor}s: ${steps.join(", ")}… what comes next?`;
+    }
+    const tens = Math.floor(groups / 10) * 10;
+    const ones = groups - tens;
+    return ones === 0
+      ? `${groups / 10} × ${divisor} = ${(groups / 10) * divisor}. Now times that by 10.`
+      : `${tens} × ${divisor} = ${tens * divisor}. Now add ${ones} × ${divisor} = ${ones * divisor}.`;
+  }
   if (groups <= 12) {
     const firstFew = [1, 2, 3].filter((n) => n <= groups).map((n) => n * divisor).join(", ");
     return `Count in ${divisor}s: ${firstFew}… keep going until you have said ${groups} ${plural(groups, "number", "numbers")}.`;
@@ -44,6 +61,39 @@ function productHint(groups, divisor) {
     return `Try ${groups / 10} × ${divisor}, then times by 10.`;
   }
   return `Split it up: ${tens} × ${divisor} plus ${ones} × ${divisor}.`;
+}
+
+function leftoverHint(remaining, used, tries) {
+  if (tries >= 2) {
+    const nextTen = Math.ceil((used + 1) / 10) * 10;
+    if (nextTen < remaining && used % 10 !== 0) {
+      return `Count up in two jumps: ${used} to ${nextTen} is ${nextTen - used}, then ${nextTen} to ${remaining} is ${remaining - nextTen}. Add the two jumps.`;
+    }
+    if (used % 10 === 0 && remaining - used >= 10) {
+      const tens = Math.floor((remaining - used) / 10) * 10;
+      return `Count up from ${used}: first jump to ${used + tens}, that's ${tens}. Then how many more to get to ${remaining}?`;
+    }
+    return `Start at ${used} and count up one at a time until you reach ${remaining}. How many counts?`;
+  }
+  return `Count up from ${used} to ${remaining}, or work out ${remaining} − ${used}.`;
+}
+
+function totalHint(chunks, tries) {
+  const nums = chunks.map((c) => c.groups);
+  if (tries >= 2 && nums.length >= 2) {
+    return `Start with ${nums[0]}, then add ${nums[1]}${nums.length > 2 ? ", then keep adding the rest" : ""}.`;
+  }
+  return "Add them one at a time.";
+}
+
+function wrong(state, hintText) {
+  const tries = state.tries + 1;
+  const unlockNow = tries >= UNLOCK_AFTER && !state.showMeUnlocked;
+  const extra = unlockNow ? " If you're stuck, you can now press “Just show me the working”." : "";
+  return next(state, { tries, showMeUnlocked: state.showMeUnlocked || tries >= UNLOCK_AFTER }, {
+    tone: "hint",
+    text: `${hintText}${extra}`,
+  }, state.prompt);
 }
 
 function guessPrompt(state) {
@@ -98,6 +148,7 @@ export function createGuidedSession(dividend, divisor) {
     product: null,
     tries: 0,
     tooMany: 0,
+    showMeUnlocked: false,
     chunks: [],
     feedback: null,
     prompt: null,
@@ -135,24 +186,26 @@ export function respond(state, input) {
     if (answer === null) {
       return next(state, {}, { tone: "info", text: "Type a whole number." }, state.prompt);
     }
-    let feedback;
-    if (answer === product) {
-      feedback = { tone: "correct", text: `Yes, ${groupsOf(state.guess, divisor)} is ${product}.` };
-    } else if (state.tries + 1 < MAX_TRIES) {
-      return next(state, { tries: state.tries + 1 }, {
-        tone: "hint",
-        text: `Not quite. ${productHint(state.guess, divisor)}`,
-      }, state.prompt);
-    } else {
-      feedback = { tone: "reveal", text: `${groupsOf(state.guess, divisor)} is ${product} (${state.guess} × ${divisor} = ${product}).` };
+    if (answer !== product) {
+      return wrong(state, `Not quite. ${productHint(state.guess, divisor, state.tries + 1)}`);
     }
+
+    const feedback = { tone: "correct", text: `Yes, ${groupsOf(state.guess, divisor)} is ${product}.` };
 
     if (product > remaining) {
       const tooMany = state.tooMany + 1;
-      const extra = tooMany >= 2 ? ` ${benchmarkHint(remaining, divisor)}` : "";
-      return next(state, { phase: "guess", guess: null, tries: 0, tooMany }, {
+      const tip = tooMany >= 2 ? ` ${benchmarkHint(remaining, divisor)}` : "";
+      const unlockNow = tooMany >= UNLOCK_AFTER && !state.showMeUnlocked;
+      const extra = unlockNow ? " If you're stuck, you can now press “Just show me the working”." : "";
+      return next(state, {
+        phase: "guess",
+        guess: null,
+        tries: 0,
+        tooMany,
+        showMeUnlocked: state.showMeUnlocked || tooMany >= UNLOCK_AFTER,
+      }, {
         tone: "hint",
-        text: `${feedback.text} But we only have ${remaining}, and ${product} is more than that. So ${state.guess} groups is too many. Try fewer.${extra}`,
+        text: `${feedback.text} But we only have ${remaining}, and ${product} is more than that. So ${state.guess} groups is too many. Try fewer.${tip}${extra}`,
       }, guessPrompt(state));
     }
 
@@ -168,16 +221,8 @@ export function respond(state, input) {
     if (answer === null) {
       return next(state, {}, { tone: "info", text: "Type a whole number." }, state.prompt);
     }
-    let feedback;
-    if (answer === left) {
-      feedback = { tone: "correct", text: `That's right, ${left} ${plural(left, "is", "are")} left.` };
-    } else if (state.tries + 1 < MAX_TRIES) {
-      return next(state, { tries: state.tries + 1 }, {
-        tone: "hint",
-        text: `Not quite. Count up from ${state.product} to ${remaining}, or work out ${remaining} − ${state.product}.`,
-      }, state.prompt);
-    } else {
-      feedback = { tone: "reveal", text: `${remaining} − ${state.product} = ${left}, so ${left} ${plural(left, "is", "are")} left.` };
+    if (answer !== left) {
+      return wrong(state, `Not quite. ${leftoverHint(remaining, state.product, state.tries + 1)}`);
     }
 
     const chunk = { groups: state.guess, groupSize: divisor, value: state.product, before: remaining, after: left };
@@ -189,7 +234,7 @@ export function respond(state, input) {
       product: null,
       tries: 0,
       tooMany: 0,
-    }, feedback, {
+    }, { tone: "correct", text: `That's right, ${left} ${plural(left, "is", "are")} left.` }, {
       kind: "yesno",
       text: `We have ${left} left. Do you think we could make any more groups of ${divisor}?`,
     });
@@ -216,22 +261,13 @@ export function respond(state, input) {
           : `Right. ${remaining} is less than ${divisor}, so we can't make another full group. The ${remaining} left over is the remainder.`,
       });
     }
-    if (state.tries + 1 < MAX_TRIES) {
-      const hint = canMakeMore
-        ? `Look again. We have ${remaining}, and one group needs ${divisor}. Is ${remaining} more than ${divisor}?`
-        : `Look again. Can we make a group of ${divisor} from only ${remaining}?`;
-      return next(state, { tries: state.tries + 1 }, { tone: "hint", text: hint }, state.prompt);
-    }
-    if (canMakeMore) {
-      return next(state, { phase: "guess", tries: 0 }, {
-        tone: "reveal",
-        text: `We can, because ${remaining} is more than ${divisor}.`,
-      }, guessPrompt(state));
-    }
-    return toTotalOrFinish(state, {
-      tone: "reveal",
-      text: `We can't, because ${remaining} is less than ${divisor}. The ${remaining} left over is the remainder.`,
-    });
+    const firstHint = canMakeMore
+      ? `Look again. We have ${remaining}, and one group needs ${divisor}. Is ${remaining} more than ${divisor}?`
+      : `Look again. Can we make a group of ${divisor} from only ${remaining}?`;
+    const secondHint = canMakeMore
+      ? `One group needs ${divisor}, and we still have ${remaining}. That's enough for at least one more group.`
+      : `One group needs ${divisor}, but we only have ${remaining}. That's not enough for a full group.`;
+    return wrong(state, state.tries + 1 >= 2 ? secondHint : firstHint);
   }
 
   if (state.phase === "total") {
@@ -240,17 +276,11 @@ export function respond(state, input) {
     if (answer === null) {
       return next(state, {}, { tone: "info", text: "Type a whole number." }, state.prompt);
     }
-    if (answer !== total && state.tries + 1 < MAX_TRIES) {
-      return next(state, { tries: state.tries + 1 }, {
-        tone: "hint",
-        text: "Not quite. Add them one at a time.",
-      }, state.prompt);
+    if (answer !== total) {
+      return wrong(state, `Not quite. ${totalHint(state.chunks, state.tries + 1)}`);
     }
     const done = finish(state);
-    const feedback = answer === total
-      ? { tone: "correct", text: `Yes, ${total} groups altogether.` }
-      : { tone: "reveal", text: `${state.chunks.map((c) => c.groups).join(" + ")} = ${total} groups altogether.` };
-    return { ...done, feedback };
+    return { ...done, feedback: { tone: "correct", text: `Yes, ${total} groups altogether.` } };
   }
 
   return state;

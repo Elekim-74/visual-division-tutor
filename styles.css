@@ -353,6 +353,20 @@ button:focus-visible {
   grid-template-columns: 1.25fr 1fr 0.8fr;
 }
 
+button:disabled,
+button:disabled:hover {
+  border-color: #c3cbd8;
+  color: #8a94a6;
+  background: #eef1f6;
+  cursor: not-allowed;
+}
+
+.lock-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .guided-card {
   margin-top: 24px;
   padding: clamp(20px, 4vw, 30px);
